@@ -1,0 +1,203 @@
+﻿import os
+from datetime import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Text, Float, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+from urllib.parse import quote_plus
+
+# Environment variables
+MSSQL_SERVER = os.getenv("MSSQL_SERVER", "localhost\\MSSQLSERVERDEV")
+MSSQL_DATABASE = os.getenv("MSSQL_DATABASE", "FotoAnaliz")
+MSSQL_USERNAME = os.getenv("MSSQL_USERNAME", "")
+MSSQL_PASSWORD = os.getenv("MSSQL_PASSWORD", "")
+MSSQL_PORT = os.getenv("MSSQL_PORT", "1433")
+
+# MSSQL Connection String
+if MSSQL_USERNAME:
+    # SQL Server Authentication
+    password_encoded = quote_plus(MSSQL_PASSWORD)
+    DATABASE_URL = f"mssql+pyodbc://{MSSQL_USERNAME}:{password_encoded}@{MSSQL_SERVER}/{MSSQL_DATABASE}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+else:
+    # Windows Authentication (Trusted Connection)
+    DATABASE_URL = f"mssql+pyodbc://{MSSQL_SERVER}/{MSSQL_DATABASE}?driver=ODBC+Driver+18+for+SQL+Server&Trusted_Connection=yes&TrustServerCertificate=yes"
+
+print(f"Connecting to: {MSSQL_SERVER}/{MSSQL_DATABASE}")
+print(f"Auth type: {'SQL Server' if MSSQL_USERNAME else 'Windows Authentication'}")
+
+# SQLAlchemy Engine
+engine = create_engine(
+    DATABASE_URL,
+    echo=True if os.getenv("DEBUG") == "True" else False,
+    pool_pre_ping=True,
+    pool_recycle=3600
+)
+
+# Session
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base
+Base = declarative_base()
+
+
+# Database dependency for FastAPI
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# ==================== MODELS ====================
+
+# 1. Companies (Şirketler)
+class Company(Base):
+    __tablename__ = "companies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, unique=True, index=True)
+    logo_url = Column(String(500))
+    description = Column(Text)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    products = relationship("Product", back_populates="company", cascade="all, delete-orphan")
+    datasets = relationship("Dataset", back_populates="company", cascade="all, delete-orphan")
+    models = relationship("Model", back_populates="company", cascade="all, delete-orphan")
+    analyses = relationship("Analysis", back_populates="company", cascade="all, delete-orphan")
+    scoring_rules = relationship("ScoringRule", back_populates="company", cascade="all, delete-orphan")
+
+
+# 2. Products (Ürünler)
+class Product(Base):
+    __tablename__ = "products"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    name = Column(String(255), nullable=False, index=True)
+    sku = Column(String(100), unique=True, index=True)
+    barcode = Column(String(100))
+    category = Column(String(100))
+    brand = Column(String(100))
+    image_url = Column(String(500))
+    reference_colors = Column(JSON)  # Ana renkler: {"primary": "#FF0000", "secondary": "#00FF00"}
+    package_type = Column(String(100))  # "bottle", "can", "box", etc.
+    dimensions = Column(JSON)  # {"width": 100, "height": 200, "depth": 50}
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    company = relationship("Company", back_populates="products")
+
+
+# 3. Datasets (Veri Setleri)
+class Dataset(Base):
+    __tablename__ = "datasets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    total_images = Column(Integer, default=0)
+    annotated_images = Column(Integer, default=0)
+    train_images = Column(Integer, default=0)
+    val_images = Column(Integer, default=0)
+    classes = Column(JSON)  # ["Product A", "Product B", "Product C"]
+    status = Column(String(50), default="preparing")  # preparing, ready, training, completed
+    dataset_path = Column(String(500))  # ./datasets/company_1/dataset_1
+    yaml_path = Column(String(500))  # ./datasets/company_1/dataset_1/data.yaml
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    company = relationship("Company", back_populates="datasets")
+    models = relationship("Model", back_populates="dataset")
+
+
+# 4. Models (AI Modelleri)
+class Model(Base):
+    __tablename__ = "models"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=True)
+    name = Column(String(255), nullable=False)
+    version = Column(String(50))
+    base_model = Column(String(100), default="yolov8n.pt")
+    model_path = Column(String(500))  # ./models/company_1/model_v1.pt
+    status = Column(String(50), default="pending")  # pending, training, completed, failed
+    accuracy = Column(Float)
+    precision = Column(Float)
+    recall = Column(Float)
+    mAP50 = Column(Float)
+    mAP50_95 = Column(Float)
+    training_config = Column(JSON)  # {"epochs": 50, "batch": 16, "imgsz": 640}
+    training_metrics = Column(JSON)  # Eğitim metrikleri
+    training_started_at = Column(DateTime)
+    training_completed_at = Column(DateTime)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    company = relationship("Company", back_populates="models")
+    dataset = relationship("Dataset", back_populates="models")
+    analyses = relationship("Analysis", back_populates="model")
+
+
+# 5. Analyses (Raf Analizleri)
+class Analysis(Base):
+    __tablename__ = "analyses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
+    image_path = Column(String(500), nullable=False)
+    image_url = Column(String(500))
+    detections = Column(JSON)  # Tespit edilen ürünler ve konumları
+    total_products = Column(Integer, default=0)
+    product_counts = Column(JSON)  # {"Product A": 5, "Product B": 3}
+    shelf_coverage = Column(Float)  # Raf doluluk oranı %
+    color_analysis = Column(JSON)  # Renk analizi sonuçları
+    planogram_score = Column(Float)  # Planogram uyum skoru
+    visibility_score = Column(Float)  # Görünürlük skoru
+    total_score = Column(Float)  # Toplam skor
+    analysis_date = Column(DateTime, default=datetime.utcnow)
+    inference_time = Column(Float)  # Saniye cinsinden
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    company = relationship("Company", back_populates="analyses")
+    model = relationship("Model", back_populates="analyses")
+
+
+# 6. Scoring Rules (Puanlama Kuralları)
+class ScoringRule(Base):
+    __tablename__ = "scoring_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    rule_name = Column(String(255), nullable=False)
+    rule_type = Column(String(100), nullable=False)  # "shelf_coverage", "product_visibility", "planogram_compliance"
+    weight = Column(Float, default=1.0)  # Kural ağırlığı
+    parameters = Column(JSON)  # Kural parametreleri
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    company = relationship("Company", back_populates="scoring_rules")
+
+
+# Create all tables
+def init_db():
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully!")
+
+
+if __name__ == "__main__":
+    init_db()

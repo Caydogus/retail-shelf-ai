@@ -1,0 +1,187 @@
+﻿{
+  "info": {
+    "name": "Retail Shelf AI API",
+    "description": "Complete API collection for Retail Shelf AI system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "company_id",
+      "value": "1"
+    },
+    {
+      "key": "product_id",
+      "value": "1"
+    },
+    {
+      "key": "dataset_id",
+      "value": "1"
+    },
+    {
+      "key": "model_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Company\",\n  \"description\": \"Company description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/companies/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", ""]
+            }
+          }
+        },
+        {
+          "name": "Get All Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/companies/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Company by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Company",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": {{company_id}},\n  \"name\": \"Product Name\",\n  \"sku\": \"SKU123\",\n  \"category\": \"Category\",\n  \"brand\": \"Brand Name\",\n  \"reference_colors\": {\n    \"primary\": \"#FF0000\",\n    \"secondary\": \"#00FF00\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Company Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/company/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "company", "{{company_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Datasets",
+      "item": [
+        {
+          "name": "Create Dataset",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": {{company_id}},\n  \"name\": \"Dataset Name\",\n  \"description\": \"Dataset description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/datasets/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "datasets", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Company Datasets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/datasets/company/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "datasets", "company", "{{company_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

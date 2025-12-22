@@ -1,0 +1,39 @@
+﻿# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+pyodbc==5.0.1
+pymssql==2.2.11
+
+# AI & ML
+ultralytics==8.1.0
+torch==2.1.1
+torchvision==0.16.1
+opencv-python==4.8.1.78
+pillow==10.1.0
+numpy==1.26.2
+scikit-learn==1.3.2
+
+# Image Processing
+albumentations==1.3.1
+imageio==2.33.0
+
+# Background Tasks
+celery==5.3.4
+redis==5.0.1
+
+# API & Data
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+
+# Utilities
+aiofiles==23.2.1
+python-dateutil==2.8.2
+pytz==2023.3

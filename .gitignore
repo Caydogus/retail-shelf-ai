@@ -1,0 +1,19 @@
+﻿# Python
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Project
+backend/runs/
+backend/models/*.pt
+backend/dataset/images/
+*.log
+.env
