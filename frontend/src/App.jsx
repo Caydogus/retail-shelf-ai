@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿﻿import React, { useState, useEffect } from 'react';
+import ProductAdd from './pages/ProductAdd';  // 🆕 1. EKLEME
 import './App.css';
 
 function App() {
@@ -259,7 +260,6 @@ function App() {
           <div className="results">
             <h3>Analiz Sonuçları</h3>
             
-            {/* Zaman Serisi Karşılaştırma */}
             {analysisResult.comparison && (
               <div className={`alert ${analysisResult.comparison.trend === 'stable' ? 'info' : analysisResult.comparison.trend === 'improving' ? 'success' : 'warning'}`}>
                 <strong>Trend:</strong> {analysisResult.comparison.trend === 'stable' ? '📊 Sabit' : analysisResult.comparison.trend === 'improving' ? '📈 İyileşiyor' : '📉 Kötüleşiyor'}
@@ -274,7 +274,6 @@ function App() {
               </div>
             )}
 
-            {/* Genel Özet */}
             <div className="grid">
               <div className="card">
                 <div className="card-label">Toplam Skor</div>
@@ -294,7 +293,6 @@ function App() {
               </div>
             </div>
 
-            {/* Raf Gözü Detayları */}
             <h3 style={{marginTop: '2rem'}}>Raf Gözleri Analizi</h3>
             <div className="eyes-container">
               {analysisResult.analysis.eyes.map((eye) => (
@@ -430,7 +428,6 @@ function App() {
     <div>
       <h1>Model Eğitimi</h1>
       
-      {/* Dataset Upload */}
       <div className="card">
         <h3>📸 Dataset Yükle</h3>
         <p>Eğitim için raf fotoğraflarını yükleyin (50-200 adet önerilir)</p>
@@ -458,7 +455,6 @@ function App() {
         </button>
       </div>
 
-      {/* Mevcut Datasets */}
       <div className="card" style={{marginTop: '2rem'}}>
         <h3>📁 Mevcut Dataset'ler</h3>
         {datasets.length > 0 ? (
@@ -495,7 +491,6 @@ function App() {
         )}
       </div>
 
-      {/* Mevcut Modeller */}
       <div className="card" style={{marginTop: '2rem'}}>
         <h3>🤖 Mevcut Modeller</h3>
         {models.length > 0 ? (
@@ -551,7 +546,6 @@ function App() {
         )}
       </div>
 
-      {/* Training Start (Gelecek) */}
       <div className="card" style={{marginTop: '2rem'}}>
         <h3>🎓 Model Eğitimi Başlat</h3>
         <div className="alert warning">
@@ -561,11 +555,15 @@ function App() {
     </div>
   );
 
+  // 🆕 2. EKLEME - Ürün Ekleme Render Fonksiyonu
+  const renderProductAdd = () => <ProductAdd />;
+
   const renderContent = () => {
     switch (page) {
       case 'dashboard': return renderDashboard();
       case 'analyze': return renderAnalysis();
       case 'products': return renderProducts();
+      case 'product-add': return renderProductAdd(); // 🆕 3. EKLEME
       case 'shelves': return renderShelves();
       case 'reports': return renderReports();
       case 'training': return renderTraining();
@@ -592,6 +590,10 @@ function App() {
             </button>
             <button onClick={() => { setPage('products'); setMenuOpen(false); }} className={page === 'products' ? 'active' : ''}>
               📦 Ürünler
+            </button>
+            {/* 🆕 4. EKLEME - Menüye Yeni Buton */}
+            <button onClick={() => { setPage('product-add'); setMenuOpen(false); }} className={page === 'product-add' ? 'active' : ''}>
+              ➕ Ürün Ekle
             </button>
             <button onClick={() => { setPage('shelves'); setMenuOpen(false); }} className={page === 'shelves' ? 'active' : ''}>
               🏪 Raflar
